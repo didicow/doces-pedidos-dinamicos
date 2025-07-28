@@ -34,7 +34,7 @@ const ManageOptions = () => {
 
   const onSubmit = (data: FormData) => {
     if (data.category && data.value) {
-      createOptionMutation.mutate(data as { category: typeof data.category; value: string }, {
+      createOptionMutation.mutate(data, {
         onSuccess: () => {
           form.reset();
         },
@@ -42,6 +42,7 @@ const ManageOptions = () => {
     }
   };
 
+  // Agrupar por categoria
   const groupedOptions = categories.reduce((acc, category) => {
     acc[category] = options.filter(option => option.category === category);
     return acc;
@@ -51,7 +52,7 @@ const ManageOptions = () => {
     <div className="min-h-screen bg-gradient-sweet">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          
+
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Link to="/">
@@ -72,7 +73,7 @@ const ManageOptions = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
+
             {/* Formulário para Adicionar */}
             <Card className="shadow-soft">
               <CardHeader>
@@ -88,7 +89,7 @@ const ManageOptions = () => {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    
+
                     {/* Categoria */}
                     <FormField
                       control={form.control}
@@ -123,10 +124,10 @@ const ManageOptions = () => {
                         <FormItem>
                           <FormLabel className="text-foreground font-medium">Valor</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="Digite o valor da opção" 
+                            <Input
+                              placeholder="Digite o valor da opção"
                               className="bg-background border-border"
-                              {...field} 
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -135,8 +136,8 @@ const ManageOptions = () => {
                     />
 
                     {/* Botão */}
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="w-full"
                       disabled={createOptionMutation.isPending}
                     >
@@ -171,7 +172,7 @@ const ManageOptions = () => {
                         <div className="space-y-2">
                           {groupedOptions[category]?.length > 0 ? (
                             groupedOptions[category].map((option) => (
-                              <div 
+                              <div
                                 key={option.id}
                                 className="p-3 bg-muted/30 rounded-lg text-sm"
                               >
