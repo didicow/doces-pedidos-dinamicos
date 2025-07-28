@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { CalendarIcon, ShoppingBag, MapPin, Clock, CreditCard } from 'lucide-react';
+import { CalendarIcon, ShoppingBag, MapPin, Clock, CreditCard, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -40,6 +40,7 @@ const formSchema = z.object({
   nomeCliente: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   produto: z.enum(produtos, { required_error: 'Selecione um produto' }),
   quantidade: z.coerce.number().min(1, 'Quantidade deve ser pelo menos 1'),
+  valorPedido: z.coerce.number().min(0.01, 'Valor deve ser maior que zero'),
   sabores: z.array(z.string()).min(1, 'Selecione pelo menos um sabor/cobertura/recheio'),
   observacao: z.string().optional(),
   forma: z.enum(['Retirar', 'Entregar'], { required_error: 'Selecione a forma de entrega' }),
@@ -60,6 +61,7 @@ export function OrderForm() {
     defaultValues: {
       nomeCliente: '',
       quantidade: 1,
+      valorPedido: 0,
       sabores: [],
       observacao: '',
       endereco: '',
@@ -199,6 +201,36 @@ export function OrderForm() {
                       )}
                     />
                   </div>
+
+                  {/* Valor do Pedido */}
+                  <FormField
+                    control={form.control}
+                    name="valorPedido"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-foreground font-medium flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          Valor do Pedido
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                              R$
+                            </span>
+                            <Input 
+                              type="number" 
+                              step="0.01"
+                              min="0"
+                              placeholder="0,00"
+                              className="bg-background border-border pl-10"
+                              {...field} 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {/* Sabores/Coberturas/Recheios */}
                   {watchedProduto && (
