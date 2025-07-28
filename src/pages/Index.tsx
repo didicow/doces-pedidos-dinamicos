@@ -1,11 +1,22 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { OrderForm } from '@/components/OrderForm';
+import heroImage from '@/assets/confectionery-hero.jpg';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-sweet">
+      {/* Hero Section */}
+      <div className="relative h-64 md:h-80 overflow-hidden">
+        <img 
+          src={heroImage} 
+          alt="Thai Doces - Doces Artesanais" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/20"></div>
+      </div>
+      
+      {/* Form Section */}
+      <div className="relative -mt-32 z-10">
+        <OrderForm />
       </div>
     </div>
   );

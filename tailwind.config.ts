@@ -24,6 +24,10 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				'sweet-pink': 'hsl(var(--sweet-pink))',
+				'cream': 'hsl(var(--cream))',
+				'lavender': 'hsl(var(--lavender))',
+				'success': 'hsl(var(--success))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -89,6 +93,14 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			backgroundImage: {
+				'gradient-sweet': 'var(--gradient-sweet)',
+				'gradient-button': 'var(--gradient-button)'
+			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'button': 'var(--shadow-button)'
 			}
 		}
 	},
