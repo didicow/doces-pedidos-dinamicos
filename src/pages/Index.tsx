@@ -1,4 +1,4 @@
-import { OrderForm } from '@/components/OrderForm';
+import { NewOrderForm } from '@/components/NewOrderForm';
 import heroImage from '@/assets/confectionery-hero.jpg';
 
 const Index = () => {
@@ -16,7 +16,7 @@ const Index = () => {
       
       {/* Form Section */}
       <div className="relative -mt-32 z-10">
-        <OrderForm />
+        <NewOrderForm />
       </div>
     </div>
   );
