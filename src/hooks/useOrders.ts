@@ -30,23 +30,13 @@ interface CreateOrderData {
   valorTotal: number;
 }
 
-// Variáveis do Airtable
-const API_KEY = import.meta.env.VITE_AIRTABLE_API_KEY;
-const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
-const TABLE_NAME = import.meta.env.VITE_AIRTABLE_TABLE_ORDERS;
-
-const API_BASE = `https://thai-doces-api.onrender.com/api/orders`;
+// URL da sua API no Render
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/orders`;
 
 // --------- FETCH: Buscar todos os pedidos ---------
 const fetchOrders = async (): Promise<Order[]> => {
-  console.log("🔍 Buscando pedidos do Airtable...");
-  const response = await fetch(API_BASE, {
-    headers: {
-      Authorization: `Bearer ${API_KEY}`,
-    },
-  });
-
-  console.log("Status da resposta:", response.status);
+  console.log("🔍 Buscando pedidos da API...");
+  const response = await fetch(API_BASE);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -55,55 +45,37 @@ const fetchOrders = async (): Promise<Order[]> => {
   }
 
   const data = await response.json();
-  console.log("Dados recebidos do Airtable:", data);
+  console.log("Pedidos recebidos:", data);
 
-  // Filtra registros válidos (sem campos essenciais vazios)
-  return data.records
-    .filter((record: any) => record.fields.Cliente && record.fields.Produto)
-    .map((record: any) => ({
-      id: record.id,
-      cliente: record.fields.Cliente,
-      produto: record.fields.Produto,
-      quantidade: record.fields.Quantidade,
-      recheio: record.fields.Recheio || [],
-      observacao: record.fields.Observação,
-      entrega: record.fields.Entrega,
-      endereco: record.fields.Endereço,
-      statusPagamento: record.fields["Status Pagamento"],
-      dataPedido: record.fields["Data Pedido"],
-      dataEntrega: record.fields["Data Entrega"],
-      valorTotal: record.fields["Valor Total (€)"],
-    }));
+  // API já retorna no formato correto
+  return data;
 };
 
 // --------- MUTATION: Criar novo pedido ---------
 const createOrder = async (data: CreateOrderData): Promise<Order> => {
-  console.log("🚀 Enviando novo pedido para Airtable:", data);
+  console.log("🚀 Enviando novo pedido para API:", data);
 
   const payload = {
-    Cliente: data.cliente,
-    Produto: data.produto,
-    Quantidade: Number(data.quantidade),
-    Recheio: Array.isArray(data.recheio) ? data.recheio : [data.recheio],
-    Observação: data.observacao || "",
-    Entrega: data.entrega,
-    Endereço: data.endereco || "",
-    "Status Pagamento": data.statusPagamento,
-    // NÃO enviar "Data Pedido" -> Airtable cria automaticamente
-    "Data Entrega": new Date(data.dataEntrega).toISOString().split("T")[0],
-    "Valor Total (€)": Number(data.valorTotal) || 0,
+    cliente: data.cliente,
+    produto: data.produto,
+    quantidade: Number(data.quantidade),
+    recheio: Array.isArray(data.recheio) ? data.recheio : [data.recheio],
+    observacao: data.observacao || "",
+    entrega: data.entrega,
+    endereco: data.endereco || "",
+    statusPagamento: data.statusPagamento,
+    dataPedido: data.dataPedido,
+    dataEntrega: data.dataEntrega,
+    valorTotal: Number(data.valorTotal) || 0,
   };
 
   const response = await fetch(API_BASE, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ fields: payload }),
+    body: JSON.stringify(payload),
   });
-
-  console.log("Status da resposta ao criar:", response.status);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -112,22 +84,9 @@ const createOrder = async (data: CreateOrderData): Promise<Order> => {
   }
 
   const newData = await response.json();
-  console.log("Pedido criado no Airtable:", newData);
+  console.log("Pedido criado:", newData);
 
-  return {
-    id: newData.id,
-    cliente: newData.fields.Cliente,
-    produto: newData.fields.Produto,
-    quantidade: newData.fields.Quantidade,
-    recheio: newData.fields.Recheio || [],
-    observacao: newData.fields.Observação,
-    entrega: newData.fields.Entrega,
-    endereco: newData.fields.Endereço,
-    statusPagamento: newData.fields["Status Pagamento"],
-    dataPedido: newData.fields["Data Pedido"],
-    dataEntrega: newData.fields["Data Entrega"],
-    valorTotal: newData.fields["Valor Total (€)"],
-  };
+  return newData;
 };
 
 // --------- Hook principal: Buscar todos ---------
