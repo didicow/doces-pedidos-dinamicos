@@ -35,7 +35,7 @@ const API_KEY = import.meta.env.VITE_AIRTABLE_API_KEY;
 const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
 const TABLE_NAME = import.meta.env.VITE_AIRTABLE_TABLE_ORDERS;
 
-const API_BASE = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+const API_BASE = `https://thai-doces-api.onrender.com/api/orders`;
 
 // --------- FETCH: Buscar todos os pedidos ---------
 const fetchOrders = async (): Promise<Order[]> => {

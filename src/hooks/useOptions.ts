@@ -17,7 +17,7 @@ const API_KEY = import.meta.env.VITE_AIRTABLE_API_KEY;
 const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
 const TABLE_ID = import.meta.env.VITE_AIRTABLE_TABLE_OPTIONS;
 
-const API_BASE = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
+const API_BASE = `https://thai-doces-api.onrender.com/api/options`;
 
 // DEBUG - Verificar se as variáveis vieram corretas do Render
 console.log("🔧 Debug Airtable Options → API_KEY:", API_KEY ? "OK" : "MISSING");
