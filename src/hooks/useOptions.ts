@@ -14,6 +14,7 @@ interface CreateOptionData {
 
 // URL da API do backend
 const API_BASE = `${import.meta.env.VITE_API_BASE}/options`;
+
 // --------- FETCH: Buscar todas as opções ---------
 const fetchOptions = async (): Promise<Option[]> => {
   const response = await fetch(API_BASE);
@@ -25,8 +26,12 @@ const fetchOptions = async (): Promise<Option[]> => {
 
   const data = await response.json();
 
-  // API já retorna com `category` e `value`
-  return data;
+  // Converte o que vem do backend (Categoria/Valor) para category/value
+  return data.map((item: any) => ({
+    id: item.id,
+    category: item.Categoria || item.categoria,
+    value: item.Valor || item.valor,
+  }));
 };
 
 // --------- MUTATION: Criar nova opção ---------
@@ -37,8 +42,9 @@ const createOption = async (data: CreateOptionData): Promise<Option> => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      category: data.category,
-      value: data.value,
+      // Envia com o mesmo formato que o backend espera
+      Categoria: data.category,
+      Valor: data.value,
     }),
   });
 
@@ -47,7 +53,14 @@ const createOption = async (data: CreateOptionData): Promise<Option> => {
     throw new Error("Erro ao criar opção");
   }
 
-  return response.json();
+  const newData = await response.json();
+
+  // Converte resposta para padrão do frontend
+  return {
+    id: newData.id,
+    category: newData.Categoria || newData.categoria,
+    value: newData.Valor || newData.valor,
+  };
 };
 
 // --------- Hook principal: Buscar todas ---------
