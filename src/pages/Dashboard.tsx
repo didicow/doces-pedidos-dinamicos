@@ -6,97 +6,82 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, Download, DollarSign, Package, TrendingUp, ClipboardList } from 'lucide-react';
 import { useOptions } from '@/hooks/useOptions';
-
-// Mock data - replace with real API calls
-const mockOrders = [
-  {
-    id: '1',
-    produto: 'Brigadeiro Gourmet',
-    recheio: 'Chocolate Belga',
-    quantidade: 50,
-    entrega: 'Retirada',
-    statusPagamento: 'Pago',
-    dataEntrega: '2024-08-10',
-    observacao: 'Embalar separadamente'
-  },
-  {
-    id: '2', 
-    produto: 'Beijinho Premium',
-    recheio: 'Coco Fresco',
-    quantidade: 30,
-    entrega: 'Delivery',
-    statusPagamento: 'Pendente',
-    dataEntrega: '2024-08-12',
-    observacao: ''
-  },
-  {
-    id: '3',
-    produto: 'Casadinho',
-    recheio: 'Doce de Leite',
-    quantidade: 25,
-    entrega: 'Retirada',
-    statusPagamento: 'Pago',
-    dataEntrega: '2024-08-25',
-    observacao: 'Entrega às 14h'
-  }
-];
+import { useOrders } from '@/hooks/useOrders';
 
 const Dashboard = () => {
   const [dateFilter, setDateFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [productFilter, setProductFilter] = useState('all');
 
+  // Busca opções (Produtos, Status Pagamento) do Airtable
   const { data: options = [] } = useOptions();
 
-  // Get unique products for filter
+  // Busca pedidos do Airtable
+  const { data: orders = [], isLoading, isError } = useOrders();
+
+  // Se estiver carregando ou deu erro
+  if (isLoading) {
+    return <div className="p-8 text-center">Carregando pedidos...</div>;
+  }
+
+  if (isError) {
+    return <div className="p-8 text-center text-red-500">Erro ao carregar pedidos. Verifique a API.</div>;
+  }
+
+  // Filtros dinâmicos
   const produtos = options.filter(opt => opt.category === 'Produto');
   const statusPagamentos = options.filter(opt => opt.category === 'Status Pagamento');
 
-  // Filter orders based on selected filters
-  const filteredOrders = mockOrders.filter(order => {
+  // Filtrar pedidos
+  const filteredOrders = orders.filter(order => {
     if (productFilter !== 'all' && order.produto !== productFilter) return false;
     if (statusFilter !== 'all' && order.statusPagamento !== statusFilter) return false;
-    
+
     if (dateFilter !== 'all') {
       const orderDate = new Date(order.dataEntrega);
       const today = new Date();
       const oneWeek = 7 * 24 * 60 * 60 * 1000;
-      
+
       if (dateFilter === 'week' && orderDate.getTime() - today.getTime() > oneWeek) return false;
       if (dateFilter === 'month' && orderDate.getMonth() !== today.getMonth()) return false;
     }
-    
+
     return true;
   });
 
-  // Calculate summary stats
+  // Estatísticas
   const totalOrders = filteredOrders.length;
   const totalQuantity = filteredOrders.reduce((sum, order) => sum + order.quantidade, 0);
   const paidOrders = filteredOrders.filter(order => order.statusPagamento === 'Pago').length;
   const pendingOrders = totalOrders - paidOrders;
 
-  // Get row color based on delivery date
+  // Cor da linha conforme data de entrega
   const getRowColor = (dataEntrega: string) => {
     const orderDate = new Date(dataEntrega);
     const today = new Date();
     const diffDays = Math.ceil((orderDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 7) return 'bg-green-50 dark:bg-green-950'; // Esta semana - verde
-    if (diffDays <= 14) return 'bg-yellow-50 dark:bg-yellow-950'; // Próxima semana - amarelo  
-    return 'bg-gray-50 dark:bg-gray-950'; // Mais tarde - cinza
+
+    if (diffDays <= 7) return 'bg-green-50 dark:bg-green-950';
+    if (diffDays <= 14) return 'bg-yellow-50 dark:bg-yellow-950';
+    return 'bg-gray-50 dark:bg-gray-950';
   };
 
+  // Exportar CSV
   const exportToCSV = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + "ID,Produto,Recheio,Quantidade,Entrega,Status Pagamento,Data Entrega,Observação\n"
-      + filteredOrders.map(order => 
-          `${order.id},${order.produto},${order.recheio},${order.quantidade},${order.entrega},${order.statusPagamento},${order.dataEntrega},"${order.observacao}"`
-        ).join("\n");
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      'ID,Produto,Recheio,Quantidade,Entrega,Status Pagamento,Data Entrega,Observação\n' +
+      filteredOrders
+        .map(
+          (order) =>
+            `${order.id},${order.produto},${order.recheio},${order.quantidade},${order.entrega},${order.statusPagamento},${order.dataEntrega},"${order.observacao}"`
+        )
+        .join('\n');
 
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "pedidos-thai-doces.csv");
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'pedidos-thai-doces.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -105,6 +90,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-sweet p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-8">
+        {/* Cabeçalho */}
         <div className="flex items-center justify-between mb-8">
           <div className="text-center flex-1">
             <h1 className="text-4xl font-bold text-foreground mb-2">
@@ -122,7 +108,7 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* Summary Cards */}
+        {/* Cards de Resumo */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="shadow-soft">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -173,7 +159,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Filtros */}
         <Card className="shadow-soft">
           <CardHeader>
             <CardTitle className="text-foreground">Filtros</CardTitle>
@@ -227,7 +213,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Orders Table */}
+        {/* Tabela de Pedidos */}
         <Card className="shadow-soft">
           <CardHeader>
             <CardTitle className="text-foreground">Lista de Pedidos</CardTitle>
@@ -256,11 +242,13 @@ const Dashboard = () => {
                       <TableCell>{order.quantidade}</TableCell>
                       <TableCell>{order.entrega}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.statusPagamento === 'Pago' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            order.statusPagamento === 'Pago'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                          }`}
+                        >
                           {order.statusPagamento}
                         </span>
                       </TableCell>

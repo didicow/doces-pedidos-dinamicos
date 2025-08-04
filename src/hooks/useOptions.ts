@@ -12,20 +12,30 @@ interface CreateOptionData {
   value: string;
 }
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/options`;
+// Variáveis do Airtable
+const API_KEY = import.meta.env.VITE_AIRTABLE_API_KEY;
+const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
+const TABLE_NAME = import.meta.env.VITE_AIRTABLE_TABLE_OPTIONS;
+
+const API_BASE = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
 
 // --------- FETCH: Buscar todas as opções ---------
 const fetchOptions = async (): Promise<Option[]> => {
-  const response = await fetch(API_BASE);
+  const response = await fetch(API_BASE, {
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+    },
+  });
+
   if (!response.ok) throw new Error('Erro ao buscar opções');
 
   const data = await response.json();
 
-  // Normaliza o formato do backend (categoria/valor) para category/value
-  return data.map((item: any) => ({
-    id: item.id,
-    category: item.categoria?.trim(),
-    value: item.valor?.trim(),
+  // Normaliza dados do Airtable (fields.categoria / fields.valor)
+  return data.records.map((record: any) => ({
+    id: record.id,
+    category: record.fields.Categoria?.trim(),
+    value: record.fields.Valor?.trim(),
   }));
 };
 
@@ -33,15 +43,26 @@ const fetchOptions = async (): Promise<Option[]> => {
 const createOption = async (data: CreateOptionData): Promise<Option> => {
   const response = await fetch(API_BASE, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
-      categoria: data.category,
-      valor: data.value,
+      fields: {
+        categoria: data.category,
+        valor: data.value,
+      },
     }),
   });
 
   if (!response.ok) throw new Error('Erro ao criar opção');
-  return response.json();
+  const newData = await response.json();
+
+  return {
+    id: newData.id,
+    category: newData.fields.categoria,
+    value: newData.fields.valor,
+  };
 };
 
 // --------- Hook principal: Buscar todas ---------
@@ -80,7 +101,6 @@ export const useCreateOption = () => {
 export const useOptionsByCategory = (category: string) => {
   const { data: options = [], isLoading } = useOptions();
 
-  // Filtra categoria normalizando case e espaços
   const filteredOptions = options.filter(
     (option) =>
       option.category?.toLowerCase().trim() === category.toLowerCase().trim()

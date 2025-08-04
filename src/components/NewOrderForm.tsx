@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { CalendarIcon, ShoppingBag, MapPin, Clock, CreditCard, Settings, BarChart3 } from 'lucide-react';
+import { CalendarIcon, ShoppingBag, MapPin, Clock, CreditCard, Settings, BarChart3, User, Home } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -18,23 +18,28 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { useOptionsByCategory } from '@/hooks/useOptions';
 import { cn } from '@/lib/utils';
+import { useCreateOrder } from '@/hooks/useOrders';
 
 const formSchema = z.object({
+  cliente: z.string().min(1, 'Informe o nome do cliente'),
   produto: z.string().min(1, 'Selecione um produto'),
   recheio: z.string().min(1, 'Selecione um recheio'),
   entrega: z.string().min(1, 'Selecione a forma de entrega'),
+  endereco: z.string().min(1, 'Informe o endereço'),
   statusPagamento: z.string().min(1, 'Selecione o status do pagamento'),
   quantidade: z.coerce.number().min(1, 'Quantidade deve ser pelo menos 1'),
   observacao: z.string().optional(),
   dataEntrega: z.date({ required_error: 'Selecione a data de entrega' }),
+  valorTotal: z.coerce.number().min(0, 'Informe o valor total'),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export function NewOrderForm() {
   const { toast } = useToast();
-  
-  // Buscar opções dinâmicas da API
+  const { mutate: createOrder } = useCreateOrder();
+
+  // Buscar opções dinâmicas do Airtable
   const { options: produtos, isLoading: loadingProdutos } = useOptionsByCategory('Produto');
   const { options: recheios, isLoading: loadingRecheios } = useOptionsByCategory('Recheio');
   const { options: entregas, isLoading: loadingEntregas } = useOptionsByCategory('Entrega');
@@ -49,12 +54,25 @@ export function NewOrderForm() {
   });
 
   const onSubmit = (data: FormData) => {
-    console.log('Pedido enviado:', data);
+    createOrder({
+      cliente: data.cliente,
+      produto: data.produto,
+      quantidade: data.quantidade,
+      recheio: data.recheio,
+      observacao: data.observacao,
+      entrega: data.entrega,
+      endereco: data.endereco,
+      statusPagamento: data.statusPagamento,
+      dataPedido: new Date().toISOString(), // registra data atual
+      dataEntrega: data.dataEntrega.toISOString(),
+      valorTotal: data.valorTotal,
+    });
+
     toast({
       title: "Pedido Criado! 🍰",
       description: "Seu pedido foi registrado com sucesso!",
     });
-    
+
     form.reset();
   };
 
@@ -107,7 +125,25 @@ export function NewOrderForm() {
               ) : (
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    
+
+                    {/* Cliente */}
+                    <FormField
+                      control={form.control}
+                      name="cliente"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground font-medium flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Cliente
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nome do cliente" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     {/* Produto */}
                     <FormField
                       control={form.control}
@@ -222,6 +258,24 @@ export function NewOrderForm() {
                       />
                     </div>
 
+                    {/* Endereço */}
+                    <FormField
+                      control={form.control}
+                      name="endereco"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground font-medium flex items-center gap-2">
+                            <Home className="h-4 w-4" />
+                            Endereço
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Rua, número e bairro" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     {/* Quantidade */}
                     <FormField
                       control={form.control}
@@ -256,6 +310,27 @@ export function NewOrderForm() {
                               className="bg-background border-border resize-none"
                               rows={3}
                               {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Valor Total */}
+                    <FormField
+                      control={form.control}
+                      name="valorTotal"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground font-medium">Valor Total (€)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              placeholder="0.00"
+                              className="bg-background border-border"
+                              {...field} 
                             />
                           </FormControl>
                           <FormMessage />
