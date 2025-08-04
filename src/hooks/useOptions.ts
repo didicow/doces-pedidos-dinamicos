@@ -12,12 +12,18 @@ interface CreateOptionData {
   value: string;
 }
 
-// Variáveis do Airtable
+// Variáveis do Airtable (usando ID da tabela)
 const API_KEY = import.meta.env.VITE_AIRTABLE_API_KEY;
 const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
-const TABLE_NAME = import.meta.env.VITE_AIRTABLE_TABLE_OPTIONS;
+const TABLE_ID = import.meta.env.VITE_AIRTABLE_TABLE_OPTIONS;
 
-const API_BASE = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+const API_BASE = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
+
+// DEBUG - Verificar se as variáveis vieram corretas do Render
+console.log("🔧 Debug Airtable Options → API_KEY:", API_KEY ? "OK" : "MISSING");
+console.log("🔧 Debug Airtable Options → BASE_ID:", BASE_ID);
+console.log("🔧 Debug Airtable Options → TABLE_ID:", TABLE_ID);
+console.log("🔧 Debug Airtable Options → API_BASE:", API_BASE);
 
 // --------- FETCH: Buscar todas as opções ---------
 const fetchOptions = async (): Promise<Option[]> => {
@@ -27,15 +33,18 @@ const fetchOptions = async (): Promise<Option[]> => {
     },
   });
 
-  if (!response.ok) throw new Error('Erro ao buscar opções');
+  if (!response.ok) {
+    console.error("Erro ao buscar opções:", await response.text());
+    throw new Error('Erro ao buscar opções');
+  }
 
   const data = await response.json();
 
-  // Normaliza dados do Airtable (fields.categoria / fields.valor)
-  return data.records.map((record: any) => ({
-    id: record.id,
-    category: record.fields.Categoria?.trim(),
-    value: record.fields.Valor?.trim(),
+  // Normaliza o formato do backend (categoria/valor) para category/value
+  return data.records.map((item: any) => ({
+    id: item.id,
+    category: item.fields.categoria?.trim(),
+    value: item.fields.valor?.trim(),
   }));
 };
 
@@ -43,8 +52,8 @@ const fetchOptions = async (): Promise<Option[]> => {
 const createOption = async (data: CreateOptionData): Promise<Option> => {
   const response = await fetch(API_BASE, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${API_KEY}`,
+    headers: { 
+      'Authorization': `Bearer ${API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -55,14 +64,11 @@ const createOption = async (data: CreateOptionData): Promise<Option> => {
     }),
   });
 
-  if (!response.ok) throw new Error('Erro ao criar opção');
-  const newData = await response.json();
-
-  return {
-    id: newData.id,
-    category: newData.fields.categoria,
-    value: newData.fields.valor,
-  };
+  if (!response.ok) {
+    console.error("Erro ao criar opção:", await response.text());
+    throw new Error('Erro ao criar opção');
+  }
+  return response.json();
 };
 
 // --------- Hook principal: Buscar todas ---------
@@ -101,6 +107,7 @@ export const useCreateOption = () => {
 export const useOptionsByCategory = (category: string) => {
   const { data: options = [], isLoading } = useOptions();
 
+  // Filtra categoria normalizando case e espaços
   const filteredOptions = options.filter(
     (option) =>
       option.category?.toLowerCase().trim() === category.toLowerCase().trim()
