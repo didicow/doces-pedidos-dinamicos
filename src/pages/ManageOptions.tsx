@@ -33,13 +33,13 @@ const ManageOptions = () => {
   });
 
   const onSubmit = (data: FormData) => {
-    if (data.category && data.value) {
-      createOptionMutation.mutate(data, {
-        onSuccess: () => {
-          form.reset();
-        },
-      });
-    }
+    // Type assertion to ensure data has all required fields
+    const submitData = data as Required<FormData>;
+    createOptionMutation.mutate(submitData, {
+      onSuccess: () => {
+        form.reset();
+      },
+    });
   };
 
   // Agrupar por categoria
@@ -97,7 +97,7 @@ const ManageOptions = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground font-medium">Categoria</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-background border-border">
                                 <SelectValue placeholder="Selecione a categoria" />

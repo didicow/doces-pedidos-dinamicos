@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { CalendarIcon, ShoppingBag, MapPin, Clock, CreditCard, Settings } from 'lucide-react';
+import { CalendarIcon, ShoppingBag, MapPin, Clock, CreditCard, Settings, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -75,12 +75,20 @@ export function NewOrderForm() {
                 Formulário de Pedido
               </p>
             </div>
-            <Link to="/manage-options">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Settings className="h-4 w-4" />
-                Gerenciar
-              </Button>
-            </Link>
+            <div className="flex gap-4">
+              <Link to="/dashboard">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Ver Dashboard
+                </Button>
+              </Link>
+              <Link to="/manage-options">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Gerenciar Opções
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <Card className="shadow-soft">
