@@ -31,8 +31,7 @@ interface CreateOrderData {
 }
 
 // URL da sua API no Render
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/orders`;
-
+const API_BASE = `${import.meta.env.VITE_API_BASE}/orders`;
 // --------- FETCH: Buscar todos os pedidos ---------
 const fetchOrders = async (): Promise<Order[]> => {
   console.log("🔍 Buscando pedidos da API...");

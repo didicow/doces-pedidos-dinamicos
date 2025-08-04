@@ -13,8 +13,7 @@ interface CreateOptionData {
 }
 
 // URL da API do backend
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/options`;
-
+const API_BASE = `${import.meta.env.VITE_API_BASE}/options`;
 // --------- FETCH: Buscar todas as opções ---------
 const fetchOptions = async (): Promise<Option[]> => {
   const response = await fetch(API_BASE);
